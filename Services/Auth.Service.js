@@ -40,9 +40,8 @@ exports.log_in_logic = async (phone, password) => {
       message: createResult.message || "failed to create the admin",
     };
   }
-  console.log(createResult?.data?.user[0]);
 
-  const accessToken = await Admin.GenerateToken(createResult.data.user[0]);
+  const accessToken = await Admin.GenerateToken(createResult.data.user[ 0 ]);
   if (accessToken) {
     console.log("test-3-passed");
     return {
@@ -58,4 +57,17 @@ exports.log_in_logic = async (phone, password) => {
   }
 };
 
-exports.update = async (phone, password, name) => {};
+exports.update_logic = async (phone, password, name, id) => {
+  const find_user = await Admin.update(phone, password, name, id);
+  if (find_user.success) {
+    return {
+      success: true,
+      data: "Data updated",
+    };
+  } else {
+    return {
+      success: false,
+      message: find_user.message,
+    };
+  }
+};

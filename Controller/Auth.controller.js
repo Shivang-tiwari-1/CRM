@@ -3,6 +3,7 @@ const Admin = require("../Models/admin.Model");
 const {
   create_Admin_logic,
   log_in_logic,
+  update_logic,
 } = require("../Services/Auth.Service");
 const { cookie_options } = require("../Constant");
 
@@ -59,35 +60,44 @@ exports.login = async (req, res) => {
   const createResult = await log_in_logic(phone, password);
   console.log(createResult);
   if (createResult.success) {
-    console.log(createResult.data.data.user[0]);
+    console.log(createResult.data.data.user[ 0 ]);
     return res
       .status(200)
       .cookie("accessToken", createResult?.accessToken, cookie_options)
       .json({
         success: true,
         user: {
-          ...createResult?.data?.data?.user[0],
-          id: Number(createResult?.data?.data?.user[0].id),
+          ...createResult?.data?.data?.user[ 0 ],
+          id: Number(createResult?.data?.data?.user[ 0 ].id),
         },
       });
   } else {
     return res.status(400).json({
-      success: createResult?.success,
+      success: false,
       message: createResult?.message,
     });
   }
 };
 
 exports.update = async (req, res) => {
-  const { phone, password, name } = req.body;
-  if ([phone, password, name].some((data) => data !== undefined)) {
-    console.log("test-1=>passed");
-  } else {
-    console.log("test-1-failed");
+  const { phone, password, name } = req.query;
+  if (![ phone, password, name ].some((val) => !val)) {
     return res.status(400).json({
       success: false,
-      message: "data missing",
+      message: "Data missing",
     });
   }
-  
+
+  const updating = await update_logic(phone, password, name, req.admin[ 0 ].id.toString());
+  if (updating.success) {
+    return res.status(200).json({
+      success: true,
+      ...updating,
+    });
+  } else {
+    return res.status(400).json({
+      success: false,
+      message: updating.message,
+    });
+  }
 };

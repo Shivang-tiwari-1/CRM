@@ -1,7 +1,7 @@
 const { pool } = require("../Config/Databse.config");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { find_user } = require("../Repository/admin.Repository");
+const { find_user, update } = require("../Repository/admin.Repository");
 
 class Admin {
   static async create(name, phone, password) {
@@ -12,7 +12,7 @@ class Admin {
 
       const result = await conn.query(
         "INSERT INTO admin (name, phone,password) VALUES (?, ?,?)",
-        [name, phone, password]
+        [ name, phone, password ]
       );
 
       const insertId = result.insertId;
@@ -39,9 +39,9 @@ class Admin {
 
     await conn.beginTransaction();
 
-    const result = await find_user(phone);
-    console.log(result);
-    const compare_pass = await bcrypt.compare(password, result[0].password);
+    const result = await find_user({ field: "phone", value: phone });
+
+    const compare_pass = await bcrypt.compare(password, result[ 0 ].password);
     if (compare_pass) {
       return {
         success: true,
@@ -55,6 +55,38 @@ class Admin {
         message: "wrong cred",
       };
     }
+  }
+
+
+  static async update(phone, password, name, id) {
+    const result = await find_user({ field: "id", value: id });
+    if (!result) {
+      return {
+        success: false,
+        message: "Could not fetch the admin details"
+      };
+    }
+    console.log("--_>",result)
+
+    const updates = [];
+    if (phone) updates.push({ field: "phone", value: phone });
+    if (password) updates.push({ field: "password", value: password });
+    if (name) updates.push({ field: "name", value: name });
+    
+    for (const updateData of updates) {
+      const updated = await update(updateData, result[ 0 ].id);
+      if (!updated) {
+        return {
+          success: false,
+          message: `Could not update ${updateData.field}`
+        };
+      }
+    }
+
+    return {
+      success: true,
+      message: "Update successful"
+    };
   }
 
   static async GenerateToken(userData) {

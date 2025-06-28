@@ -5,7 +5,7 @@ exports.authentication = async (req, res, next) => {
   console.log("|authentication starts|");
   const authHeader = req.headers.authorization || req.headers.Authorization;
   let tokenFromHeader = authHeader?.startsWith("Bearer ")
-    ? authHeader.split(" ")[1]
+    ? authHeader.split(" ")[ 1 ]
     : req.cookies.accessToken;
   if (tokenFromHeader !== null) {
     console.log("test1-token-passed");
@@ -29,7 +29,7 @@ exports.authentication = async (req, res, next) => {
     });
   }
 
-  const data = await find_user(decode.id);
+  const data = await find_user({ value: decode.id, field: 'id' });
   if (data) {
     console.log("test3-token-passed");
   } else {

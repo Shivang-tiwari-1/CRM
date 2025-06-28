@@ -9,6 +9,6 @@ const router = require("express").Router();
 
 router.post("/create_admin", create_admin);
 router.get("/login_admin", login);
-router.get("/update", authentication, update);
+router.post("/update", authentication, update);
 
 module.exports = router;
